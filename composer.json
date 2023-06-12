@@ -4,7 +4,9 @@
     "license": "Apache-2.0",
     "authors": [
         {
-            "name": "Lucas",
+            "name": "Lucas Ribeiro",
+            "email": "lucasmnribeiro@gmail.com",
+            "homepage": "https://www.lucasnribeiro.com",
             "role": "Developer"
         }
     ],
@@ -14,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Framework\\" : "Framework"
+            "Mink\\" : "src/Mink"
         }
     }
 }
