@@ -1,0 +1,20 @@
+{
+    "name": "lucasnribeiro/mink-framework",
+    "keywords": ["framework", "mvc", "minimal", "router"],
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Lucas",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=8.1.0",
+        "firebase/php-jwt": "^6.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Framework\\" : "Framework"
+        }
+    }
+}
