@@ -42,7 +42,7 @@ class Router {
      * Summary of __construct
      */
     public function __construct($routes = null){
-        $this->routes = $routes;
+        self::$routes = $routes;
         $this->buildURI();
     }
 
@@ -173,7 +173,7 @@ class Router {
 
     private function matchURIwithRoute(){
 
-        foreach($this->routes[$this->method] as $route => $declared_route){
+        foreach(self::$routes[$this->method] as $route => $declared_route){
             $path = preg_split('@/@', $declared_route['path'], -1, PREG_SPLIT_NO_EMPTY);
             if(sizeof($path) == sizeof($this->url)){
                 if($this->url[0] === $path[0]){
@@ -194,7 +194,7 @@ class Router {
     public function setRequestHeaders(){
 
         $http_origin   = $_SERVER['HTTP_ORIGIN']; 
-        $origins       = getenv('ALLOWED_ORIGINS') ? (array) getenv('ALLOWED_ORIGINS') : false;
+        $origins       = getenv('ALLOWED_ORIGINS') ? (array) getenv('ALLOWED_ORIGINS') : [];
 
         if (in_array($http_origin, $origins)){  
             $index = array_search($http_origin, $origins);
