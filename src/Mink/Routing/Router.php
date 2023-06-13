@@ -2,7 +2,7 @@
 
 namespace Mink\Routing;
 
-use Framework\Error\ControllerNotFound;
+use Mink\Error\ControllerNotFound;
 
 /**
  * Summary of Router

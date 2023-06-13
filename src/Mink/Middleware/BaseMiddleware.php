@@ -1,10 +1,8 @@
 <?php 
 
+namespace Mink\Middleware;
 
-
-namespace Framework\Middleware;
-
-use Framework\Request;
+use Mink\Request;
 
 class BaseMiddleware {
 

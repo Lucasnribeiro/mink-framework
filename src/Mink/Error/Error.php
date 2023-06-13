@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework\Error;
+namespace Mink\Error;
 
 
 class Error{

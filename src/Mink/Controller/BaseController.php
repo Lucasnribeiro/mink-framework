@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework\Controller;
+namespace Mink\Controller;
 
 
 /**

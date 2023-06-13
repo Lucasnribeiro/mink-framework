@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Framework\Error;
+namespace Mink\Error;
 
 
 class ControllerNotFound extends Error{

@@ -1,8 +1,8 @@
 <?php
 
-namespace Framework\Controller;
+namespace Mink\Controller;
 
-use Framework\Request;
+use Mink\Request;
 
 /**
  * This is the "base controller class". All other "real" controllers extend this class.

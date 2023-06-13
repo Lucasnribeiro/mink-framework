@@ -1,6 +1,6 @@
 <?php
 
-namespace Framework\Model;
+namespace Mink\Model;
 
 /**
  * The abstract model class.
@@ -25,9 +25,9 @@ abstract class BaseModel {
     public $table;
 
     /**
-     * The name of the table in the database that the model binds
+     * The rows from the table
      *
-     * @var string
+     * @var array
      */
     public $rows;
 
