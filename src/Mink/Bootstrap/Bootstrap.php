@@ -1,7 +1,5 @@
 <?php
 namespace Mink\Bootstrap;
-
-require __DIR__.'/vendor/autoload.php';
 use Mink\Routing\Router;
 
 class Bootstrap {
@@ -11,15 +9,6 @@ class Bootstrap {
     }
 
     private function start($routes){
-        // set a constant that holds the project's folder path, like "/var/www/".
-        // DIRECTORY_SEPARATOR adds a slash to the end of the path
-        define('ROOT', __DIR__ . DIRECTORY_SEPARATOR);
-        // set a constant that holds the project's "application" folder, like "/var/www/application".
-        define('APP', ROOT . 'App' . DIRECTORY_SEPARATOR);
-        define('FRAMEWORK', ROOT . 'framework' . DIRECTORY_SEPARATOR);
-
-        // load application config (error reporting etc.)
-        require APP . 'config/config.php';
 
         // start the application
         $router = new Router($routes);
