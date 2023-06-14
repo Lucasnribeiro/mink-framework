@@ -2,7 +2,7 @@
 
 namespace Mink\Middleware;
 
-use Mink\Request;
+use Mink\Routing\Request;
 
 class BaseMiddleware {
 

@@ -2,7 +2,7 @@
 
 namespace Mink\Controller;
 
-use Mink\Request;
+use Mink\Routing\Request;
 
 /**
  * This is the "base controller class". All other "real" controllers extend this class.
