@@ -8,7 +8,7 @@ use Mink\Error\ControllerNotFound;
  * Summary of Router
  */
 class Router {
-    public static $routes = array();  
+    public static $routes = [];  
     /**
         * Key value array of querystrings 
         * @var array
@@ -38,173 +38,127 @@ class Router {
     private $method;
 
 
-    /**
-     * Summary of __construct
-     */
-    public function __construct($routes = null){
-        self::$routes = $routes;
+    public function __construct() {
         $this->buildURI();
     }
 
-    public static function get($path, $resolve, $middleware = null){
-        self::$routes['GET'] = array(
-            'path'         => $path, 
-            'class'        => $resolve[0], 
-            'function'     => $resolve[1],
-            'method'       => 'GET',
-            'middleware'   => $middleware
-        );
-
-        return [$path, $resolve];
+    public static function addRoute($method, $path, $resolve, $middleware = null) {
+        self::$routes[] = [
+            'method'     => $method,
+            'path'       => $path,
+            'class'      => $resolve[0],
+            'function'   => $resolve[1],
+            'middleware' => $middleware,
+        ];
     }
 
-    public static function post($path, $resolve, $middleware = null){
-        self::$routes['POST'] = array(
-            'path'          => $path, 
-            'class'         => $resolve[0], 
-            'function'      => $resolve[1],
-            'method'        => 'POST',
-            'middleware'    => $middleware
-        );
-
-        return [$path, $resolve];
+    public static function get($path, $resolve, $middleware = null) {
+        self::addRoute('GET', $path, $resolve, $middleware);
     }
 
-    public static function put($path, $resolve, $middleware = null){
-        self::$routes['PUT'] = array(
-            'path'          => $path, 
-            'class'         => $resolve[0], 
-            'function'      => $resolve[1],
-            'method'        => 'PUT',
-            'middleware'    => $middleware
-        );
-
-        return [$path, $resolve];
+    public static function post($path, $resolve, $middleware = null) {
+        self::addRoute('POST', $path, $resolve, $middleware);
     }
 
-    public static function patch($path, $resolve, $middleware = null){
-        self::$routes['PATCH'] = array(
-            'path'          => $path, 
-            'class'         => $resolve[0], 
-            'function'      => $resolve[1],
-            'method'        => 'PATCH',
-            'middleware'    => $middleware
-        );
-
-        return [$path, $resolve];
+    public static function put($path, $resolve, $middleware = null) {
+        self::addRoute('PUT', $path, $resolve, $middleware);
     }
 
-    public static function delete($path, $resolve, $middleware = null){
-        self::$routes['DELETE'] = array(
-            'path'          => $path, 
-            'class'         => $resolve[0], 
-            'function'      => $resolve[1],
-            'method'        => 'DELETE',
-            'middleware'    => $middleware
-        );
-
-        return [$path, $resolve];
+    public static function patch($path, $resolve, $middleware = null) {
+        self::addRoute('PATCH', $path, $resolve, $middleware);
     }
 
-    public function middleware($middleware){
-        self::$middleware = new $middleware;
+    public static function delete($path, $resolve, $middleware = null) {
+        self::addRoute('DELETE', $path, $resolve, $middleware);
     }
 
-    public static function group($group){
-        //resolve the middleware
-        self::$middleware = new $group['middleware'];
+    public function middleware($middleware) {
 
     }
 
-    private function callController($class, $function, $middleware, $args, $json, $data = null){
+    public static function group($group) {
+
+    }
+
+    private function callController($class, $function, $middleware, $args, $json, $data = null) {
         $this->setRequestHeaders();
         
         $request = new Request();
 
-        if($middleware !== null){
+        if ($middleware !== null) {
             call_user_func([$middleware, 'run'], $request);
         }
 
-        $request->params         = $args;
-        $request->querystrings   = $this->querystrings;
-        $request->data           = $data;
-        $request->json           = json_decode($json, true);
+        $request->params = $args;
+        $request->querystrings = $this->getQueryStrings();
+        $request->data = $data;
+        $request->json = json_decode($json, true);
 
-        $controller = new $class;
+        $controller = new $class();
         
         call_user_func([$controller, $function], $request);
-
     }
 
-    private function getQueryStrings(){
-        if (isset($_SERVER['QUERY_STRING'])){
-
+    private function getQueryStrings() {
+        if (array_key_exists('QUERY_STRING', $_SERVER)){
             parse_str($_SERVER['QUERY_STRING'], $arr);
             return $arr;
-
         }else{
-
-            return []; 
-
+            return [];
         }
     }
 
-    public function handlePreflight(){
+    public function handlePreflight() {
         if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
             $this->setRequestHeaders();
             die(); 
         }
     }
 
-    private function buildURI(){
-
-        $this->request_uri       = $_SERVER['REQUEST_URI'];
-        $this->method            = $_SERVER['REQUEST_METHOD'];
-        $this->querystrings      = $this->getQueryStrings();
-        $removed_querystrings    = preg_replace('/\?.*/', '', $this->request_uri);
-        $this->url               = preg_split('@/@', $removed_querystrings, -1, PREG_SPLIT_NO_EMPTY);
-
-        //check if its a preflight request [OPTIONS]
+    private function buildURI() {
+        $this->request_uri = $_SERVER['REQUEST_URI'];
+        $this->method = $_SERVER['REQUEST_METHOD'];
+        $this->url = parse_url($this->request_uri, PHP_URL_PATH);
+        
+        // Check if it's a preflight request [OPTIONS]
         $this->handlePreflight();
-        //try to match the request to it's respective controller
+        // Try to match the request to its respective controller
         $this->matchURIwithRoute();
-
     }
 
-    private function matchURIwithRoute(){
+    private function matchURIwithRoute() {
+        foreach (self::$routes as $route) {
+            if ($route['method'] == $this->method && $route['path'] == $this->url) {
+                $this->callController($route['class'], $route['function'], $route['middleware'], [], file_get_contents('php://input'), $_POST);
+                // Controller found and executed, stop routing execution
 
-        foreach(self::$routes[$this->method] as $route => $declared_route){
-            $path = preg_split('@/@', $declared_route['path'], -1, PREG_SPLIT_NO_EMPTY);
-            if(sizeof($path) == sizeof($this->url)){
-                if($this->url[0] === $path[0]){
-                    preg_match_all('!{.*?}+!', $declared_route['path'], $params);
-                    $params = preg_replace("/[^a-zA-Z 0-9]+/", "", $params[0] );
-                    $this->callController($declared_route['class'], $declared_route['function'], $declared_route['middleware'], $params, file_get_contents('php://input'), $_POST );
-                    //controller found and executed, stop routing execution
-                    die();
-                }
+                die();
             }
         }
 
-        //if no controller was found
+        // If no controller was found
         $this->setRequestHeaders();
         ControllerNotFound::throwError();
     }
 
-    public function setRequestHeaders(){
+    public function setRequestHeaders() {
 
-        $http_origin   = $_SERVER['HTTP_ORIGIN']; 
-        $origins       = getenv('ALLOWED_ORIGINS') ? (array) getenv('ALLOWED_ORIGINS') : [];
+        if (array_key_exists('HTTP_ORIGIN', $_SERVER)){
 
-        if (in_array($http_origin, $origins)){  
-            $index = array_search($http_origin, $origins);
-            header("Access-Control-Allow-Origin: ". $origins[$index]);
+            $http_origin = $_SERVER['HTTP_ORIGIN']; 
+            $origins = getenv('ALLOWED_ORIGINS') ? (array) getenv('ALLOWED_ORIGINS') : [];
+
+            if (in_array($http_origin, $origins)) {  
+                $index = array_search($http_origin, $origins);
+                header("Access-Control-Allow-Origin: " . $origins[$index]);
+            }
+
+            header("Content-Type: application/json");  
+            header('Access-Control-Allow-Credentials: true'); 
+            header("Access-Control-Max-Age: 3600");    
+            header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");  
+            header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");  
         }
 
-        header("Content-Type: application/json");  
-        header('Access-Control-Allow-Credentials: true'); 
-        header("Access-Control-Max-Age: 3600");    
-        header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");  
-        header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");  
     }
 }
